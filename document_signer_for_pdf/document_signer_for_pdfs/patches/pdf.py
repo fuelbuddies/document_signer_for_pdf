@@ -3,11 +3,12 @@ import io
 import pdfkit
 from datetime import date
 
-from distutils.version import LooseVersion
+from packaging.version import Version
 
-from PyPDF2 import PdfReader, PdfWriter
+from pypdf import PdfReader, PdfWriter
 from pyhanko.sign import signers
 from pyhanko import stamp
+from frappe import _
 from frappe.utils import scrub_urls
 from pyhanko.sign.fields import SigFieldSpec, FieldMDPSpec, FieldMDPAction, append_signature_field,MDPPerm
 from pyhanko.sign.general import load_cert_from_pemder, load_private_key_from_pemder
@@ -22,14 +23,14 @@ PDF_CONTENT_ERRORS = [
     "RemoteHostClosedError",
 ]
 
-def signed_get_pdf(html, options=None, output: PdfWriter | None = None):
+def signed_get_pdf(html, options=None, output: PdfWriter | None = None, smart_shrinking: bool = False):
     html = scrub_urls(html)
     html, options = pdf.prepare_options(html, options)
 
     options.update({"disable-javascript": "", "disable-local-file-access": ""})
 
     filedata = ""
-    if LooseVersion(pdf.get_wkhtmltopdf_version()) > LooseVersion("0.12.3"):
+    if not smart_shrinking and Version(pdf.get_wkhtmltopdf_version()) > Version("0.12.3"):
         options.update({"disable-smart-shrinking": ""})
 
     try:
